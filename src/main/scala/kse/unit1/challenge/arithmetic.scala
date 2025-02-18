@@ -6,19 +6,19 @@ object arithmetic:
 
   type Number = Long
 
-  private val increment: Number => Number =
+  val increment: Number => Number =
     value => value + 1
 
-  private val decrement: Number => Number =
+  val decrement: Number => Number =
     value => value - 1
 
-  private val isZero: Number => Boolean =
+  val isZero: Number => Boolean =
     value => value == 0
 
-  private val isNonNegative: Number => Boolean =
+  val isNonNegative: Number => Boolean =
     value => value >= 0
 
-  private val abs: Number => Number =
+  val abs: Number => Number =
     value =>
       if isNonNegative(value) then value
       else -value
