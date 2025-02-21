@@ -26,48 +26,58 @@ object expressions:
     override def toString: String = name
 
   case class Negation(expression: Expression) extends Expression:
+
     def evaluate: Expression = expression.evaluate match
       case True  => False
       case False => True
       case exp   => Negation(exp)
+
     def substitute(variable: Variable, substitution: Expression): Expression =
       Negation(expression.substitute(variable, substitution))
     override def toString: String = s"!($expression)"
 
   case class Conjunction(left: Expression, right: Expression) extends Expression:
+
     def evaluate: Expression = (left.evaluate, right.evaluate) match
       case (False, _) | (_, False) => False
       case (True, exp)             => exp
       case (exp, True)             => exp
       case (l, r)                  => Conjunction(l, r)
+
     def substitute(variable: Variable, substitution: Expression): Expression =
       Conjunction(left.substitute(variable, substitution), right.substitute(variable, substitution))
     override def toString: String = s"($left ∧ $right)"
 
   case class Disjunction(left: Expression, right: Expression) extends Expression:
+
     def evaluate: Expression = (left.evaluate, right.evaluate) match
       case (True, _) | (_, True) => True
       case (False, exp)          => exp
       case (exp, False)          => exp
       case (l, r)                => Disjunction(l, r)
+
     def substitute(variable: Variable, substitution: Expression): Expression =
       Disjunction(left.substitute(variable, substitution), right.substitute(variable, substitution))
     override def toString: String = s"($left ∨ $right)"
 
   case class Implication(left: Expression, right: Expression) extends Expression:
+
     def evaluate: Expression = (left.evaluate, right.evaluate) match
       case (True, exp) => exp
       case (False, _)  => True
       case (l, r)      => Implication(l, r)
+
     def substitute(variable: Variable, substitution: Expression): Expression =
       Implication(left.substitute(variable, substitution), right.substitute(variable, substitution))
     override def toString: String = s"($left → $right)"
 
   case class Equivalence(left: Expression, right: Expression) extends Expression:
+
     def evaluate: Expression = (left.evaluate, right.evaluate) match
       case (l, r) if l == r              => True
       case (True, False) | (False, True) => False
       case (l, r)                        => if (l.hashCode() > r.hashCode()) Equivalence(r, l) else Equivalence(l, r)
+
     def substitute(variable: Variable, substitution: Expression): Expression =
       Equivalence(left.substitute(variable, substitution), right.substitute(variable, substitution))
     override def toString: String = s"($left ↔ $right)"

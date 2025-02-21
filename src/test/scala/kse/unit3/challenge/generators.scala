@@ -20,25 +20,25 @@ object generators:
 
   val genConjunction: Gen[Conjunction] =
     for
-      left <- lzy(genExpression)
+      left  <- lzy(genExpression)
       right <- lzy(genExpression)
     yield Conjunction(left, right)
 
   val genDisjunction: Gen[Disjunction] =
     for
-      left <- lzy(genExpression)
+      left  <- lzy(genExpression)
       right <- lzy(genExpression)
     yield Disjunction(left, right)
 
   val genImplication: Gen[Implication] =
     for
-      left <- lzy(genExpression)
+      left  <- lzy(genExpression)
       right <- lzy(genExpression)
     yield Implication(left, right)
 
   val genEquivalence: Gen[Equivalence] =
     for
-      left <- lzy(genExpression)
+      left  <- lzy(genExpression)
       right <- lzy(genExpression)
     yield Equivalence(left, right)
 
