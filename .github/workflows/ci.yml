@@ -6,6 +6,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: read
 
 jobs:
   branch-naming:
@@ -39,7 +40,7 @@ jobs:
         run: |
           branch_name=${{ github.head_ref }}
           package_name="${branch_name//-/}"
-          
+
           for file in ${ALL_CHANGED_FILES}; do
             if [[ "$file" != *"${package_name}"* ]]; then
               echo "$file doesn't belong to $branch_name code changes"
