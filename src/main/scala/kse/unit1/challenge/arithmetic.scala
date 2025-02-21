@@ -34,11 +34,11 @@ object arithmetic:
     def multiplicationLoop(left: Number, right: Number, acc: Number): Number =
       if isZero(right) then acc
       else if isNonNegative(right) then multiplicationLoop(left, decrement(right), addition(acc, left))
-      else multiplicationLoop(left, increment(right), addition(acc, addition(0, left)))
+      else if !isNonNegative(right) && !isNonNegative(left) then multiplicationLoop(abs(left), abs(right), 0)
+      else if !isNonNegative(right) && isNonNegative(left) then multiplicationLoop(right, left, 0)
+      else multiplicationLoop(left, right, 0)
 
-    if !isNonNegative(right) && !isNonNegative(left) then multiplicationLoop(abs(left), abs(right), 0)
-    else if !isNonNegative(right) && isNonNegative(left) then multiplicationLoop(right, left, 0)
-    else multiplicationLoop(left, right, 0)
+    multiplicationLoop(left, right, 0)
 
   def power(base: Number, p: Number): Number =
     require(p >= 0, "Power must be non-negative")
