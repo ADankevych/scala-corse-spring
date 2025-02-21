@@ -1,8 +1,7 @@
 package kse.unit2.challenge
 
-import booleans.*
 import kse.model.DummyError
-import kse.unit2.challenge.DisjunctionSpecification.property
+import kse.unit2.challenge.booleans.*
 import kse.unit2.challenge.generators.given
 import org.scalacheck.*
 import org.scalacheck.Prop.{forAll, propBoolean}
@@ -137,12 +136,12 @@ object FoldSpecification extends Properties("Fold"):
     Nil.conjunction == True
 
   property("Conjunction of all elements from non-empty list should be correctly evaluated") = forAll: (booleans: List[Boolean]) =>
-    booleans.conjunction == booleans.foldRight(True: Boolean)(_ ∧ _)
+    booleans.conjunction == booleans.foldRight[Boolean](True)((value, acc) => value ∧ acc)
 
   property("Disjunction of all elements from the empty list should be False") = propBoolean:
     Nil.disjunction == False
 
   property("Disjunction of all elements from non-empty list should be correctly evaluated") = forAll: (booleans: List[Boolean]) =>
-    booleans.disjunction == booleans.foldRight(False: Boolean)(_ ∨ _)
+    booleans.disjunction == booleans.foldRight[Boolean](False)((value, acc) => value ∨ acc)
 
 end FoldSpecification
