@@ -41,7 +41,7 @@ object NumeralsSpecification extends Properties("Numerals"):
   property("Greater or equal is consistent with less or equal") = forAll: (a: Numeral, b: Numeral) =>
     (a >= b) == !(a < b)
 
-  property("Zero has no predecessor") =
-    throws(classOf[UnsupportedOperationException]) { Zero.predecessor }
+  property("Zero has no predecessor") = throws(classOf[UnsupportedOperationException]):
+    Zero.predecessor
 
 end NumeralsSpecification
