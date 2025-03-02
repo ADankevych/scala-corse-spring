@@ -73,6 +73,7 @@ object expressions:
 
     def evaluate: Expression =
       Conjunction(Implication(left, right), Implication(right, left)).evaluate
+
     def substitute(variable: Variable, substitution: Expression): Expression =
       Equivalence(left.substitute(variable, substitution), right.substitute(variable, substitution))
     override def toString: String = s"($left ↔ $right)"
