@@ -62,10 +62,8 @@ object expressions:
 
   case class Implication(left: Expression, right: Expression) extends Expression:
 
-    def evaluate: Expression = (left.evaluate, right.evaluate) match
-      case (True, exp) => exp
-      case (False, _)  => True
-      case (l, r)      => Implication(l, r)
+    def evaluate: Expression =
+      Disjunction(Negation(left), right).evaluate
 
     def substitute(variable: Variable, substitution: Expression): Expression =
       Implication(left.substitute(variable, substitution), right.substitute(variable, substitution))
@@ -73,11 +71,8 @@ object expressions:
 
   case class Equivalence(left: Expression, right: Expression) extends Expression:
 
-    def evaluate: Expression = (left.evaluate, right.evaluate) match
-      case (l, r) if l == r              => True
-      case (True, False) | (False, True) => False
-      case (l, r)                        => if (l.hashCode() > r.hashCode()) Equivalence(r, l) else Equivalence(l, r)
-
+    def evaluate: Expression =
+      Conjunction(Implication(left, right), Implication(right, left)).evaluate
     def substitute(variable: Variable, substitution: Expression): Expression =
       Equivalence(left.substitute(variable, substitution), right.substitute(variable, substitution))
     override def toString: String = s"($left ↔ $right)"
