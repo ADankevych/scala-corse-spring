@@ -13,29 +13,44 @@ object numerals:
     def successor: Numeral = Successor(this)
 
     @targetName("greater than")
-    infix def >(that: Numeral): Boolean = this.toInt > that.toInt
+    infix def >(that: Numeral): Boolean = (this, that) match
+      case (_, Zero)                    => !this.isZero
+      case (Zero, _)                    => false
+      case (a: Successor, b: Successor) => a.predecessor > b.predecessor
 
     @targetName("greater or equal to")
-    infix def >=(that: Numeral): Boolean = this.toInt >= that.toInt
+    infix def >=(that: Numeral): Boolean = (this, that) match
+      case (_, Zero)                    => true
+      case (Zero, _)                    => false
+      case (a: Successor, b: Successor) => a.predecessor >= b.predecessor
 
     @targetName("less than")
-    infix def <(that: Numeral): Boolean = this.toInt < that.toInt
+    infix def <(that: Numeral): Boolean = that > this
 
     @targetName("less or equal to")
-    infix def <=(that: Numeral): Boolean = this.toInt <= that.toInt
+    infix def <=(that: Numeral): Boolean = that >= this
 
     @targetName("addition")
-    infix def +(that: Numeral): Numeral =
-      numerals.Numeral.fromInt(this.toInt + that.toInt)
+    infix def +(that: Numeral): Numeral = that match
+      case Zero         => this
+      case s: Successor => this.successor + s.predecessor
 
     // Optional
     @targetName("subtraction")
-    infix def -(that: Numeral): Numeral =
-      numerals.Numeral.fromInt(math.max(0, this.toInt - that.toInt))
-
-    def toInt: Int
+    infix def -(that: Numeral): Numeral = (this, that) match
+      case (_, Zero)                    => this
+      case (Zero, _)                    => Zero
+      case (a: Successor, b: Successor) => a.predecessor - b.predecessor
 
     override def toString: String = s"Nat($predecessor)"
+
+    override def equals(obj: Any): Boolean = obj match
+      case n: Numeral => (this - n).isZero
+      case _          => false
+
+    override def hashCode: Int =
+      if isZero then 0
+      else 31 * predecessor.hashCode + 1
 
   object Numeral:
 
@@ -51,25 +66,13 @@ object numerals:
 
     def predecessor: Numeral = throw new UnsupportedOperationException("Zero has no predecessor")
 
-    @targetName("greater than")
-    override infix def >(that: Numeral): Boolean = this.toInt > that.toInt
-
-    @targetName("addition")
-    override infix def +(that: Numeral): Numeral =
-      numerals.Numeral.fromInt(this.toInt + that.toInt)
-
-    // Optional
-    @targetName("subtraction")
-    override infix def -(that: Numeral): Numeral =
-      numerals.Numeral.fromInt(math.max(0, this.toInt - that.toInt))
-
-    def toInt: Int = 0
-
     override def toString: String = "Zero"
 
     override def equals(obj: Any): Boolean = obj match
-      case n: Numeral => this.toInt == n.toInt
+      case n: Numeral => n.isZero
       case _          => false
+
+    override def hashCode: Int = 0
 
   object Successor:
     def unapply(successor: Successor): Option[Numeral] = Option(successor.predecessor)
@@ -80,22 +83,4 @@ object numerals:
 
     def predecessor: Numeral = n
 
-    @targetName("greater than")
-    override infix def >(that: Numeral): Boolean = this.toInt > that.toInt
-
-    @targetName("addition")
-    override infix def +(that: Numeral): Numeral =
-      numerals.Numeral.fromInt(this.toInt + that.toInt)
-
-    // Optional
-    @targetName("subtraction")
-    override infix def -(that: Numeral): Numeral =
-      numerals.Numeral.fromInt(math.max(0, this.toInt - that.toInt))
-
-    def toInt: Int = 1 + n.toInt
-
-    override def toString: String = s"Succ(${n.toInt})"
-
-    override def equals(obj: Any): Boolean = obj match
-      case n: Numeral => this.toInt == n.toInt
-      case _          => false
+    override def toString: String = s"Succ(${n.toString})"

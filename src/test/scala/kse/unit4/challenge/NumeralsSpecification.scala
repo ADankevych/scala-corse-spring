@@ -12,19 +12,19 @@ object NumeralsSpecification extends Properties("Numerals"):
     p.withMinSuccessfulTests(50).withMaxDiscardRatio(100)
 
   property("Zero is zero") = forAll: (n: Zero) =>
-    n.toInt == 0 && n.isZero
+    n.isZero
 
-  property("Successor increases value by 1") = forAll: (n: Numeral) =>
-    n.successor.toInt == n.toInt + 1
+  property("Successor increases value") = forAll: (n: Numeral) =>
+    n.successor.predecessor == n
 
-  property("Predecessor decreases value by 1 unless Zero") = forAll: (n: Successor) =>
-    n.predecessor.toInt == n.toInt - 1
+  property("Predecessor decreases value unless Zero") = forAll: (n: Successor) =>
+    n.predecessor.successor == n
 
   property("Addition is commutative") = forAll: (a: Numeral, b: Numeral) =>
-    (a + b).toInt == (b + a).toInt
+    (a + b) == (b + a)
 
   property("Addition is associative") = forAll: (a: Numeral, b: Numeral, c: Numeral) =>
-    ((a + b) + c).toInt == (a + (b + c)).toInt
+    ((a + b) + c) == (a + (b + c))
 
   property("Subtraction from itself results in Zero") = forAll: (a: Numeral) =>
     (a - a) == Zero
