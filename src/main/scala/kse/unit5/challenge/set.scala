@@ -120,7 +120,7 @@ object set:
         val allElementsInOtherSet = (l ∪ r) ∪ NonEmpty(Empty, e, Empty)
 
         allElementsInThisSet.forAll(x => allElementsInOtherSet.contains(x)) &&
-          allElementsInOtherSet.forAll(x => allElementsInThisSet.contains(x))
+        allElementsInOtherSet.forAll(x => allElementsInThisSet.contains(x))
 
       case _ => false
     }
