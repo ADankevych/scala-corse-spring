@@ -30,21 +30,17 @@ end EmptySpecification
 
 object NonEmptySpecification extends Properties("Non-empty set laws"):
 
-  property("Universal quantifier applied to an non-empty set should return true for a tautology") =
-    forAll: (nonEmpty: NonEmpty) =>
-      nonEmpty.forAll(_ => true)
+  property("Universal quantifier applied to an non-empty set should return true for a tautology") = forAll: (nonEmpty: NonEmpty) =>
+    nonEmpty.forAll(_ => true)
 
-  property("Universal quantifier applied to an non-empty set should return false for a contradiction") =
-    forAll: (nonEmpty: NonEmpty) =>
-      !nonEmpty.forAll(_ => false)
+  property("Universal quantifier applied to an non-empty set should return false for a contradiction") = forAll: (nonEmpty: NonEmpty) =>
+    !nonEmpty.forAll(_ => false)
 
-  property("Existential quantifier applied to an non-empty set should return true for a tautology") =
-    forAll: (nonEmpty: NonEmpty) =>
-      nonEmpty.exists(_ => true)
+  property("Existential quantifier applied to an non-empty set should return true for a tautology") = forAll: (nonEmpty: NonEmpty) =>
+    nonEmpty.exists(_ => true)
 
-  property("Existential quantifier applied to an non-empty set should return false for a contradiction") =
-    forAll: (nonEmpty: NonEmpty) =>
-      !nonEmpty.exists(_ => false)
+  property("Existential quantifier applied to an non-empty set should return false for a contradiction") = forAll: (nonEmpty: NonEmpty) =>
+    !nonEmpty.exists(_ => false)
 
   property("Single-element set should contain an element") = forAll: (numeral: Numeral) =>
     NonEmpty(Empty, numeral, Empty).contains(numeral)
@@ -59,31 +55,26 @@ object SetSpecification extends Properties("Set laws"):
   property("Any set should contain its elements") = forAll: (set: NumeralSet, numeral: Numeral) =>
     set.contains(numeral) == set.exists(_ == numeral)
 
-  property("If a set does not contain a given element then all elements of the set should not be equal to the given element") =
-    forAll: (set: NumeralSet, numeral: Numeral) =>
-      !set.contains(numeral) ==> set.forAll(_ != numeral)
+  property("If a set does not contain a given element then all elements of the set should not be equal to the given element") = forAll:
+    (set: NumeralSet, numeral: Numeral) => !set.contains(numeral) ==> set.forAll(_ != numeral)
 
-  property("If a given element is added to a set then there is an element in the set equal to the given element") =
-    forAll: (set: NumeralSet, numeral: Numeral) =>
-      (set.include(numeral)).contains(numeral)
+  property("If a given element is added to a set then there is an element in the set equal to the given element") = forAll:
+    (set: NumeralSet, numeral: Numeral) => (set.include(numeral)).contains(numeral)
 
-  property("If a given element is added to a set then set should include the given element") =
-    forAll: (set: NumeralSet, numeral: Numeral) =>
-      (set.include(numeral)).contains(numeral)
+  property("If a given element is added to a set then set should include the given element") = forAll: (set: NumeralSet, numeral: Numeral) =>
+    (set.include(numeral)).contains(numeral)
 
   property("Inclusion should be idempotent") = forAll: (set: NumeralSet, numeral: Numeral) =>
     set.include(numeral).include(numeral) == set.include(numeral)
 
-  property("If a given element is removed from a set then all elements of the set should not be equals to the given element") =
-    forAll: (set: NumeralSet, numeral: Numeral) =>
-      (set remove numeral).forAll(element => element != numeral)
+  property("If a given element is removed from a set then all elements of the set should not be equals to the given element") = forAll:
+    (set: NumeralSet, numeral: Numeral) => (set remove numeral).forAll(element => element != numeral)
 
-  property("If a given element is removed from a set then the set should not contain the given element") =
-    forAll: (set: NumeralSet, numeral: Numeral) =>
-      !(set remove numeral).contains(numeral)
+  property("If a given element is removed from a set then the set should not contain the given element") = forAll: (set: NumeralSet, numeral: Numeral) =>
+    !(set remove numeral).contains(numeral)
 
-  property("If a given new element is added to a set and then removed from the set then the set should not be changed") =
-    forAll: (set: NumeralSet, numeral: Numeral) =>
+  property("If a given new element is added to a set and then removed from the set then the set should not be changed") = forAll:
+    (set: NumeralSet, numeral: Numeral) =>
       !set.contains(numeral) ==> {
         val newSet = set.include(numeral)
         newSet.remove(numeral) == set
@@ -92,16 +83,14 @@ object SetSpecification extends Properties("Set laws"):
   property("Removal should be idempotent") = forAll: (set: NumeralSet, numeral: Numeral) =>
     set.remove(numeral).remove(numeral) == set.remove(numeral)
 
-  property("A union of two given sets should contain the elements from both sets") =
-    forAll: (left: NumeralSet, right: NumeralSet) =>
-      (left ∪ right).forAll(element => left.contains(element) || right.contains(element))
+  property("A union of two given sets should contain the elements from both sets") = forAll: (left: NumeralSet, right: NumeralSet) =>
+    (left ∪ right).forAll(element => left.contains(element) || right.contains(element))
 
-  property("An intersection of two given sets should contain the same elements from both sets") =
-    forAll: (left: NumeralSet, right: NumeralSet) =>
-      (left ∩ right).forAll(element => left.contains(element) && right.contains(element))
+  property("An intersection of two given sets should contain the same elements from both sets") = forAll: (left: NumeralSet, right: NumeralSet) =>
+    (left ∩ right).forAll(element => left.contains(element) && right.contains(element))
 
-  property("A difference of two given sets should contain elements from a base set but should not contain elements from an exclusion set") =
-    forAll: (left: NumeralSet, right: NumeralSet) =>
+  property("A difference of two given sets should contain elements from a base set but should not contain elements from an exclusion set") = forAll:
+    (left: NumeralSet, right: NumeralSet) =>
       val difference = left \ right
       difference.forAll(element => left.contains(element) && !right.contains(element))
 
@@ -164,8 +153,7 @@ object SetSpecification extends Properties("Set laws"):
   property("Intersection should be distributive over union") = forAll: (a: NumeralSet, b: NumeralSet, c: NumeralSet) =>
     (a ∩ (b ∪ c)) == ((a ∩ b) ∪ (a ∩ c))
 
-  property("Difference should be distributive over intersection") =
-    forAll: (a: NumeralSet, b: NumeralSet, c: NumeralSet) =>
-      ((a ∩ b) \ c) == ((a \ c) ∩ (b \ c))
+  property("Difference should be distributive over intersection") = forAll: (a: NumeralSet, b: NumeralSet, c: NumeralSet) =>
+    ((a ∩ b) \ c) == ((a \ c) ∩ (b \ c))
 
 end SetSpecification
