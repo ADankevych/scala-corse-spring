@@ -59,25 +59,30 @@ object set:
 
     override def toString: String = "[*]"
 
-    override def equals(obj: Any): Boolean = obj.isInstanceOf[Empty]
+    override def equals(obj: Any): Boolean = obj match {
+      case _: Empty => true
+      case _        => false
+    }
 
   end Empty
 
   case class NonEmpty(left: NumeralSet, element: Numeral, right: NumeralSet) extends NumeralSet:
 
     infix def forAll(predicate: Numeral => Boolean): Boolean =
-      left.forAll(predicate) && predicate(element) && right.forAll(predicate)
+      predicate(element) && left.forAll(predicate) && right.forAll(predicate)
 
     infix def exists(predicate: Numeral => Boolean): Boolean =
-      left.exists(predicate) || predicate(element) || right.exists(predicate)
+      predicate(element) || left.exists(predicate) || right.exists(predicate)
 
     infix def contains(x: Numeral): Boolean =
-      left.contains(x) || x == element || right.contains(x)
+      if x == element then true
+      else if x < element then left.contains(x)
+      else right.contains(x)
 
     infix def include(x: Numeral): NumeralSet =
-      if x < element then NonEmpty(left.include(x), element, right)
-      else if x > element then NonEmpty(left, element, right.include(x))
-      else this
+      if x == element then this
+      else if x < element then NonEmpty(left.include(x), element, right)
+      else NonEmpty(left, element, right.include(x))
 
     infix def remove(x: Numeral): NumeralSet =
       if x < element then NonEmpty(left.remove(x), element, right)
@@ -89,18 +94,14 @@ object set:
 
     @targetName("union")
     infix def ∪(that: NumeralSet): NumeralSet =
-      that match
-        case Empty => this
-        case NonEmpty(l, e, r) =>
-          if e < element then NonEmpty(l ∪ left, e, right ∪ r)
-          else if e > element then NonEmpty(left ∪ l, element, right ∪ r)
-          else NonEmpty(left ∪ l, element, right ∪ r)
+      left ∪ right ∪ that.include(element)
 
     @targetName("intersection")
     infix def ∩(that: NumeralSet): NumeralSet =
-      (left ∩ that) ∪ (right ∩ that) match
-        case Empty       => Empty
-        case nonEmptySet => if that.contains(element) then NonEmpty(nonEmptySet, element, Empty) else nonEmptySet
+      val newLeft  = left ∩ that
+      val newRight = right ∩ that
+      if that.contains(element) then NonEmpty(newLeft, element, newRight)
+      else newLeft ∪ newRight
 
     @targetName("difference")
     infix def \(that: NumeralSet): NumeralSet =
@@ -113,11 +114,16 @@ object set:
 
     override def toString: String = s"[$left - [$element] - $right]"
 
-    override def equals(obj: Any): Boolean =
-      obj match
-        case Empty => false
-        case NonEmpty(l, e, r) =>
-          left == l && element == e && right == r
+    override def equals(obj: Any): Boolean = obj match {
+      case NonEmpty(l, e, r) =>
+        val allElementsInThisSet  = (l ∪ r) ∪ NonEmpty(Empty, e, Empty)
+        val allElementsInOtherSet = (l ∪ r) ∪ NonEmpty(Empty, e, Empty)
+
+        allElementsInThisSet.forAll(x => allElementsInOtherSet.contains(x)) &&
+          allElementsInOtherSet.forAll(x => allElementsInThisSet.contains(x))
+
+      case _ => false
+    }
 
   end NonEmpty
 
