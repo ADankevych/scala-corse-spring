@@ -2,31 +2,29 @@ package kse.unit6.challenge
 
 import kse.unit6.algebra.*
 import kse.unit6.algebra.given
+import kse.unit6.challenge.order.*
 import kse.unit6.challenge.set.*
 import org.scalacheck.*
 import org.scalacheck.Gen.lzy
 
 object generators:
 
-  def genStrictlyOrderedListOfNumerals[V: Arbitrary as gen: Monoid](size: Int): Gen[List[V]] =
+  def genStrictlyOrderedListOfNumerals[V: Arbitrary: Monoid: Order](size: Int): Gen[List[V]] =
 
     def genStrictlyOrderedListOfNumeralsReq(size: Int, last: V, list: List[V]): Gen[List[V]] =
       if size == 0 then Gen.const(list)
       else
         for
-          // Generated `delta` should not be a unit
-          // otherwise `last + delta` equals to `last`
-          // and condition on strict order is violated
-          delta  <- gen.arbitrary.retryUntil(_ != Monoid[V].unit)
-          result <- genStrictlyOrderedListOfNumeralsReq(size - 1, last + delta, list :+ last)
-        yield result
+          delta  <- Arbitrary.arbitrary[V].retryUntil(_ != Monoid[V].unit)
+          result <- genStrictlyOrderedListOfNumeralsReq(size - 1, last + delta, last :: list)
+        yield result.reverse
 
     for
-      last   <- gen.arbitrary
+      last   <- Arbitrary.arbitrary[V]
       result <- genStrictlyOrderedListOfNumeralsReq(size, last, Nil)
     yield result
 
-  def genNumeralSet[V: Arbitrary: Monoid](depth: Int): Gen[Set[V]] =
+  def genNumeralSet[V: Arbitrary: Monoid: Order](depth: Int): Gen[Set[V]] =
 
     def genNumeralSetReq(elements: List[V]): Gen[Set[V]] =
       elements match
@@ -43,16 +41,16 @@ object generators:
       set      <- genNumeralSetReq(elements)
     yield set
 
-  def genNonEmpty[V: Arbitrary: Monoid]: Gen[NonEmpty[V]] =
-    (for
+  def genNonEmpty[V: Arbitrary: Monoid: Order]: Gen[NonEmpty[V]] =
+    for
       depth <- Gen.chooseNum(1, 4)
       set   <- genNumeralSet[V](depth).retryUntil(_ != Empty)
-    yield set) flatMap:
-      case Empty             => genNonEmpty
-      case NonEmpty(l, v, r) => Gen.const(NonEmpty[V](l, v, r))
+    yield set match
+      case NonEmpty(l, v, r) => NonEmpty(l, v, r)
+      case _                 => throw new IllegalStateException("This should not happen.")
 
-  def genSet[V: Arbitrary: Monoid]: Gen[Set[V]] =
+  def genSet[V: Arbitrary: Monoid: Order]: Gen[Set[V]] =
     Gen.oneOf(Gen.const(Empty), genNonEmpty[V])
 
-  given [V: Arbitrary: Monoid]: Arbitrary[NonEmpty[V]] = Arbitrary(genNonEmpty[V])
-  given [V: Arbitrary: Monoid]: Arbitrary[Set[V]]      = Arbitrary(genSet[V])
+  given [V: Arbitrary: Monoid: Order]: Arbitrary[NonEmpty[V]] = Arbitrary(genNonEmpty[V])
+  given [V: Arbitrary: Monoid: Order]: Arbitrary[Set[V]]      = Arbitrary(genSet[V])
