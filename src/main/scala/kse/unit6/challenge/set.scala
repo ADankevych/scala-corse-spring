@@ -1,6 +1,6 @@
 package kse.unit6.challenge
 
-import kse.unit6.challenge.order.{Order, given}
+import kse.unit6.challenge.order.{Order, *, given}
 import scala.annotation.targetName
 
 object set:
@@ -11,26 +11,22 @@ object set:
 
     infix def exists(predicate: A => Boolean): Boolean
 
-    infix def contains[B >: A](x: B)(using Order[B]): Boolean
+    infix def contains[B >: A: Order](x: B): Boolean
 
-    infix def include[B >: A](x: B)(using Order[B]): Set[B]
-
-    infix def remove[B >: A](x: B)(using Order[B]): Set[B]
+    infix def include[B >: A: Order](x: B): Set[B]
 
     @targetName("union")
-    infix def ∪[B >: A](that: Set[B])(using Order[B]): Set[B]
+    infix def ∪[B >: A: Order](that: Set[B]): Set[B]
 
     @targetName("intersection")
-    infix def ∩[B >: A](that: Set[B])(using Order[B]): Set[B]
+    infix def ∩[B >: A: Order](that: Set[B]): Set[B]
 
-    @targetName("difference")
-    infix def \[B >: A](that: Set[B])(using Order[B]): Set[B]
-
-    @targetName("symmetric difference")
-    infix def ∆[B >: A](that: Set[B])(using Order[B]): Set[B] = (this \ that) ∪ (that \ this)
+    def isSubsetOf(that: Set[?]): Boolean = this.forAll(element => that.exists(_ == element))
+  end Set
 
   type Empty = Empty.type
 
+  // TODO: Remind about type system
   case object Empty extends Set[Nothing]:
 
     infix def forAll(predicate: Nothing => Boolean): Boolean = true
@@ -41,20 +37,21 @@ object set:
 
     infix def include[B: Order](x: B): Set[B] = NonEmpty(Empty, x, Empty)
 
-    infix def remove[B: Order](x: B): Set[B] = this
-
     @targetName("union")
     infix def ∪[B: Order](that: Set[B]): Set[B] = that
 
     @targetName("intersection")
-    infix def ∩[B: Order](that: Set[B]): Set[B] = this
-
-    @targetName("difference")
-    infix def \[B: Order](that: Set[B]): Set[B] = this
+    infix def ∩[B: Order](that: Set[B]): Set[B] = Empty
 
     override def toString: String = "[*]"
 
-  case class NonEmpty[A](left: Set[A], element: A, right: Set[A])(using Order[A]) extends Set[A]:
+    override def equals(obj: Any): Boolean = obj match
+      case _: Empty.type => true
+      case _             => false
+
+  end Empty
+
+  case class NonEmpty[A](left: Set[A], element: A, right: Set[A]) extends Set[A]:
 
     infix def forAll(predicate: A => Boolean): Boolean =
       predicate(element) && left.forAll(predicate) && right.forAll(predicate)
@@ -62,45 +59,35 @@ object set:
     infix def exists(predicate: A => Boolean): Boolean =
       predicate(element) || left.exists(predicate) || right.exists(predicate)
 
-    infix def contains[B >: A](x: B)(using Order[B]): Boolean =
-      Order[B].compare(x, element) match
-        case 0  => true
-        case -1 => left.contains(x)
-        case 1  => right.contains(x)
+    infix def contains[B >: A: Order](x: B): Boolean =
+      val comparison = summon[Order[B]].compare(x, element)
+      if comparison == 0 then true
+      else if comparison < 0 then left.contains(x)
+      else right.contains(x)
 
-    infix def include[B >: A](x: B)(using Order[B]): Set[B] =
-      Order[B].compare(x, element) match
-        case 0  => this
-        case -1 => NonEmpty(left.include(x), element, right)
-        case 1  => NonEmpty(left, element, right.include(x))
-
-    infix def remove[B >: A](x: B)(using Order[B]): Set[B] =
-      Order[B].compare(x, element) match
-        case 0 =>
-          val union = left ∪ right
-          if union.contains(x) then union.remove(x) else union
-        case -1 => NonEmpty(left.remove(x), element, right)
-        case 1  => NonEmpty(left, element, right.remove(x))
+    infix def include[B >: A: Order](x: B): Set[B] =
+      val comparison = summon[Order[B]].compare(x, element)
+      if comparison == 0 then this
+      else if comparison < 0 then NonEmpty(left.include(x), element, right)
+      else NonEmpty(left, element, right.include(x))
 
     @targetName("union")
-    infix def ∪[B >: A](that: Set[B])(using Order[B]): Set[B] =
-      left ∪ right ∪ that.include(element)
+    infix def ∪[B >: A: Order](that: Set[B]): Set[B] =
+      (left ∪ (right ∪ that)).include(element)
 
     @targetName("intersection")
-    infix def ∩[B >: A](that: Set[B])(using Order[B]): Set[B] =
-      val newLeft  = left ∩ that
-      val newRight = right ∩ that
-      if that.contains(element) then NonEmpty(newLeft, element, newRight)
-      else newLeft ∪ newRight
-
-    @targetName("difference")
-    infix def \[B >: A](that: Set[B])(using Order[B]): Set[B] =
-      val newLeft  = left \ that
-      val newRight = right \ that
-      if that.contains(element) then newLeft ∪ newRight
-      else NonEmpty(newLeft, element, newRight)
+    infix def ∩[B >: A: Order](that: Set[B]): Set[B] =
+      if that.contains(element) then
+        val leftIntersection  = left ∩ that
+        val rightIntersection = right ∩ that
+        NonEmpty(leftIntersection, element, rightIntersection)
+      else (left ∩ that) ∪ (right ∩ that)
 
     override def toString: String = s"[$left - [$element] - $right]"
 
+    override def equals(obj: Any): Boolean =
+      obj match
+        case that: NonEmpty[_] => that.isSubsetOf(this) && this.isSubsetOf(that)
+        case _                 => false
   end NonEmpty
 end set
