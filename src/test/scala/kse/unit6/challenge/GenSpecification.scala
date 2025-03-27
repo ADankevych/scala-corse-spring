@@ -36,13 +36,13 @@ object GenSpecification extends Properties("Gen"):
         case Empty => true
         case NonEmpty(left, element, right) =>
           condition(rootElement, element)
-            && verifySetOrderConditionsReq(left, element, (root, elem) => root > elem)
-            && verifySetOrderConditionsReq(right, element, (root, elem) => root < elem)
+          && verifySetOrderConditionsReq(left, element, (root, elem) => root > elem)
+          && verifySetOrderConditionsReq(right, element, (root, elem) => root < elem)
 
     set match
       case Empty => true
       case NonEmpty(left, element, right) =>
         verifySetOrderConditionsReq(left, element, (root, elem) => root > elem)
-          && verifySetOrderConditionsReq(right, element, (root, elem) => root < elem)
+        && verifySetOrderConditionsReq(right, element, (root, elem) => root < elem)
 
 end GenSpecification
