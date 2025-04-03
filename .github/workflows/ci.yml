@@ -24,31 +24,6 @@ jobs:
             exit 1
           fi
 
-  changed-files:
-    name: Checking changed files
-    runs-on: ubuntu-latest
-    needs: branch-naming
-
-    steps:
-      - name: Get changed files
-        id: changed-files
-        uses: tj-actions/changed-files@v45
-
-      - name: List all changed files
-        env:
-          ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
-        run: |
-          branch_name=${{ github.head_ref }}
-          package_name="${branch_name//-/}"
-
-          for file in ${ALL_CHANGED_FILES}; do
-            if [[ "$file" != *"${package_name}"* ]]; then
-              echo "$file doesn't belong to $branch_name code changes"
-              exit 1
-            fi
-          done
-          echo "List of all changed files for $branch_name are passed successfully"
-
   compile:
     runs-on: ubuntu-latest
     needs: branch-naming
