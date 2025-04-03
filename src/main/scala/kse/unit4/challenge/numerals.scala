@@ -44,9 +44,7 @@ object numerals:
 
     override def toString: String = s"Nat($predecessor)"
 
-    override def equals(obj: Any): Boolean = obj match
-      case n: Numeral => (this - n).isZero
-      case _          => false
+    override def equals(obj: Any): Boolean = obj.isInstanceOf[Numeral] && obj.hashCode == hashCode
 
     override def hashCode: Int =
       if isZero then 0
@@ -68,9 +66,7 @@ object numerals:
 
     override def toString: String = "Zero"
 
-    override def equals(obj: Any): Boolean = obj match
-      case n: Numeral => n.isZero
-      case _          => false
+    override def equals(obj: Any): Boolean = obj.isInstanceOf[Zero]
 
     override def hashCode: Int = 0
 
