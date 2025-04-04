@@ -1,7 +1,6 @@
 package kse.unit5.challenge
 
 import kse.unit4.challenge.numerals.Numeral
-
 import scala.annotation.targetName
 
 object set:
