@@ -7,26 +7,20 @@ import kse.unit7.challenge.services.*
 object app:
 
   def getPostsViews(apiKey: ApiKey): Try[List[PostView]] =
-    services.getUserProfile(apiKey).flatMap { userProfile =>
-      services.getPosts(userProfile.userId).flatMap { posts =>
-        posts
-          .foldLeft(Try(List.empty[PostView])) { (acc, post) =>
-            for {
-              list <- acc
-              view <- getPostView(post)
-            } yield view :: list
-          }
-          .map(_.reverse)
-      }
-    }
+    for {
+      userProfile <- services.getUserProfile(apiKey)
+      posts       <- services.getPosts(userProfile.userId)
+      postViews   <- posts.map(getPostView).foldLeft(Try(List.empty[PostView]))((acc, postView) => acc.flatMap(list => postView.map(_ :: list))).map(_.reverse)
+    } yield postViews
 
   def getPostsViewDesugared(apiKey: ApiKey): Try[List[PostView]] =
-    services
-      .getUserProfile(apiKey)
+    getUserProfile(apiKey)
       .flatMap(userProfile =>
         services
           .getPosts(userProfile.userId)
-          .flatMap(posts => posts.foldLeft(Try(List.empty[PostView]))((acc, post) => acc.flatMap(list => getPostView(post).map(_ :: list))).map(_.reverse))
+          .flatMap(posts =>
+            posts.map(getPostView).foldLeft(Try(List.empty[PostView]))((acc, postView) => acc.flatMap(list => postView.map(_ :: list))).map(_.reverse)
+          )
       )
 
   def getPostView(post: Post): Try[PostView] =
