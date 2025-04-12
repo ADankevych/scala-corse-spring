@@ -64,6 +64,8 @@ object set:
       case _        => false
     }
 
+    override def hashCode(): Int = 0
+
   end Empty
 
   case class NonEmpty(left: NumeralSet, element: Numeral, right: NumeralSet) extends NumeralSet:
@@ -123,6 +125,11 @@ object set:
         allElementsInOtherSet.forAll(x => allElementsInThisSet.contains(x))
 
       case _ => false
+    }
+
+    override def hashCode: Int = {
+      val allElements = (left ∪ right) ∪ NonEmpty(Empty, element, Empty)
+      allElements.hashCode
     }
 
   end NonEmpty
