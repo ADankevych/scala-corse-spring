@@ -49,6 +49,7 @@ object set:
       case _: Empty.type => true
       case _             => false
 
+    override def hashCode(): Int = 0
   end Empty
 
   case class NonEmpty[A](left: Set[A], element: A, right: Set[A]) extends Set[A]:
@@ -89,5 +90,11 @@ object set:
       obj match
         case that: NonEmpty[_] => that.isSubsetOf(this) && this.isSubsetOf(that)
         case _                 => false
+
+    override def hashCode(): Int =
+      val leftHash    = left.hashCode()
+      val rightHash   = right.hashCode()
+      val elementHash = element.hashCode()
+      leftHash ^ rightHash ^ elementHash
   end NonEmpty
 end set
