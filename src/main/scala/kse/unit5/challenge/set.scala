@@ -96,7 +96,7 @@ object set:
 
     @targetName("union")
     infix def ∪(that: NumeralSet): NumeralSet =
-      left ∪ right ∪ that.include(element)
+      (left ∪ right ∪ that).include(element)
 
     @targetName("intersection")
     infix def ∩(that: NumeralSet): NumeralSet =
@@ -117,14 +117,8 @@ object set:
     override def toString: String = s"[$left - [$element] - $right]"
 
     override def equals(obj: Any): Boolean = obj match {
-      case NonEmpty(l, e, r) =>
-        val allElementsInThisSet  = (l ∪ r) ∪ NonEmpty(Empty, e, Empty)
-        val allElementsInOtherSet = (l ∪ r) ∪ NonEmpty(Empty, e, Empty)
-
-        allElementsInThisSet.forAll(x => allElementsInOtherSet.contains(x)) &&
-        allElementsInOtherSet.forAll(x => allElementsInThisSet.contains(x))
-
-      case _ => false
+      case that: NumeralSet =>
+        this.forAll(that.contains) && that.forAll(this.contains)
     }
 
     override def hashCode: Int = {
